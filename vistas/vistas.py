@@ -4,6 +4,10 @@ from flask_jwt_extended import jwt_required, create_access_token
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
+from email.mime.multipart import MIMEMultipart
+from email.MIMEImage import MIMEImage
+from email.mime.text import MIMEText
+import smtplib
 
 from modelos import db, Usuario, UsuarioSchema
 usuario_schema = UsuarioSchema()
@@ -42,4 +46,38 @@ class VistaLogIn(Resource):
         else:
             token_de_acceso = create_access_token(identity=usuario.id)
             return {"mensaje": "Inicio de sesión exitoso", "token": token_de_acceso}
+        
+
+
+class VistaEnvioCorreoConfirmacionCompras(Resource):    
+    def post(self):
+        # create message object instance
+        msg = MIMEMultipart()
+
+
+        # setup the parameters of the message
+        password = "your_password"
+        msg['From'] = "your_address"
+        msg['To'] = "to_address"
+        msg['Subject'] = "Photos"
+
+        # attach image to message body
+        msg.attach(MIMEImage(file("google.jpg").read()))
+
+
+        # create server
+        server = smtplib.SMTP('smtp.gmail.com: 587')
+
+        server.starttls()
+
+        # Login Credentials for sending the mail
+        server.login(msg['From'], password)
+
+
+        # send the message via the server.
+        server.sendmail(msg['From'], msg['To'], msg.as_string())
+
+        server.quit()
+
+        print "successfully sent email to %s:" % (msg['To'])
 
